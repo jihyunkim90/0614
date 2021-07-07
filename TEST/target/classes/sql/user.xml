@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sql Mapper -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">
+
+<!-- 로그인체크 -->
+  <select id="LoginCheck" parameterType="com.web.maven.user.LoginVO" resultType="com.web.maven.user.UserVO">
+  select userID as id, 
+  		userPass as pass, 
+  		userName as name, 
+  		userEmail as email, 
+  		userRank as urank,
+  		regdate
+				 from user
+				 where FLAG='Y' 
+				 and userID= #{id}
+				 and userPass =SHA2(#{pass},256)
+ 
+  </select>
+  
+  
+  <!-- 회원가입 중복아이디 체크 -->
+  <select id="idCheck" parameterType="String" resultType="Integer">
+ select count(userID) as cnt from user where userID= #{id}
+ 
+  </select>
+
+<!-- 입력한 회원정보(회원가입) -->
+
+<insert id="registUser" parameterType="com.web.maven.user.UserVO">
+	insert into user (userID,userPass, userName, userEmail)
+	values(#{id}, SHA2(#{pass},256) , #{name} , #{email})
+
+</insert>
+
+</mapper>

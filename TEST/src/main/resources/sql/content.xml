@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sql Mapper -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="content">
+
+	<!-- 게시판별 검색 -->
+	<sql id="includeCount">
+		,(select count(id) as count
+		from tbl_board
+		where useFlag ='Y'
+		and boardid
+		=${boardid}
+		<if test="f eq 'title'">
+			and title like concat ('%',#{q},'%')
+		</if>
+		<if test="f eq 'writer_id'">
+			and(levenshtein(writer_id,#{q}) &lt;=2)
+		</if>
+		)cnt
+	</sql>
+
+	<select id="selectGetList"
+		parameterType="com.web.maven.content.SearchVO"
+		resultType="com.web.maven.content.ContentVO">
+		<if test="f eq 'title'">
+			select low.* , cnt.count as count
+			from(select *
+			from
+			tbl_board
+			where title like concat ('%',#{q},'%')
+			and useFlag ='Y'
+			and
+			boardid =#{boardid}
+			order by regdate desc limit 10 offset ${p})low
+		</if>
+		<if test="f eq 'writer_id'">
+			select low.* , cnt.count
+			from(select *
+			from tbl_board
+			where
+			(levenshtein(writer_id, #{q}) &lt;= 2)
+			and useFlag ='Y'
+			and boardid =
+			#{boardid}
+			order by regdate desc limit 10 offset ${p})low
+		</if>
+		<include refid="includeCount"></include>
+	</select>
+
+	<!-- 상단 메뉴바 전체 리스트 검색(권한별) -->
+	<select id="selectAllList"
+		parameterType="com.web.maven.content.SearchVO"
+		resultType="com.web.maven.content.ContentVO">
+		select low.* , cnt.count
+		from(select *
+		from tbl_board
+		where useFlag ='Y'
+		and match(title, writer_id,content) against(#{q} in boolean mode)
+		and boardid in (select boardID
+		from user_auth
+		where rankcd= #{rank})
+		order by regdate desc limit 10 offset ?)low,
+		(select count(id) as count
+		from tbl_board
+		where useFlag ='Y'
+		and match(title, writer_id,content) against(#{q} in boolean mode)
+		and boardid in (select boardID
+		from user_auth
+		where rankcd= #{rank}))cnt
+	</select>
+
+
+
+	<select id="selectDetailList" parameterType="Integer"
+		resultType="com.web.maven.content.ContentVO">
+		SELECT tb.id, bm.board_name as boardname, tb.title, tb.writer_id,
+		tb.content, tb.regdate, tb.hit, tb.files
+		FROM tbl_board tb,
+		board_master bm
+		WHERE bm.board_id = tb.boardid
+		AND tb.useFlag = 'Y'
+		AND tb.id = ${id}
+	</select>
+	<!-- 사용자 권한 별 글쓰기 기능 -->
+	<select id="getMyBoard" parameterType="String"
+		resultType="com.web.maven.content.ContentVO">
+
+		select bm.board_id as boardid,
+		bm.board_name as boardname
+		from (select board_id, board_name
+		from board_master
+		where useFlag='Y')bm,
+		(select rankcd, boardID
+		from user_auth
+		where useFlag='Y'
+		and rankcd=#{userRank})ua
+		where bm.board_id =boardID;
+	</select>
+	<!-- 글쓰기 내용 저장 -->
+
+	<select id="regeditSave"
+		parameterType="com.web.maven.content.ContentVO">
+		insert into tbl_board (boardid, title,writer_id,content)
+		values(${boardid},#{title},#{writer_id},#{content})
+	</select>
+
+	<!-- 내용수정 -->
+	<update id="modifyUpdate"
+		parameterType="com.web.maven.content.ContentVO">
+		update tbl_board set title=#{title} ,content =#{content} where id=${id}
+	</update>
+
+
+	<!-- 새 게시판 생성 -->
+	<update id="createBoard"
+		parameterType="com.web.maven.content.ContentVO">
+
+	</update>
+
+
+	<!-- 진짜 게시판 생성 -->
+	<update id="createBoardList" parameterType="String">
+		insert into board_master(board_name) values(#{boardname});
+	</update>
+
+
+	<!-- 게시판 이름 중복체크 -->
+	<select id="BoardCheck" parameterType="String"
+		resultType="Integer">
+		select count(board_name) as cnt from board_master where board_name=
+		#{boardname};
+
+	</select>
+
+
+	<!-- 게시판 삭제 생성 -->
+	<update id="deleteBoardList" parameterType="Integer">
+		delete from board_master where board_id = #{boardid};
+	</update>
+
+
+
+
+	<!-- 게시판 이름 가져오기 -->
+	<select id="getboardName"
+		resultType="com.web.maven.content.ContentVO">
+		select board_name as boardname, board_id as boardid from board_master;
+
+	</select>
+
+	<!-- 게시판 이름 누르면 글쓰기 칸에 보내기 -->
+	<select id="settingBoard" parameterType="String"
+		resultType="com.web.maven.content.ContentVO">
+		select bm.board_id as boardid, bm.board_name boardname, ua.rankcd
+
+		from user_auth ua,
+
+		board_master bm
+
+		where ua.boardID = bm.board_id and board_id = #{boardid}
+
+	</select>
+
+	<!-- 디테일에 보여줄 게시판 이름 가져오기 -->
+	<select id="getboardTwoName" parameterType="Integer"
+		resultType="com.web.maven.content.ContentVO">
+		select board_name as boardname, board_id as boardid from board_master where
+		board_id=${id};
+
+	</select>
+
+
+
+	<!-- 디테일에 보여줄 게시판 이름 가져오기 (2번째 시도) -->
+	<select id="createBoardDeatil" parameterType="Integer" resultType="com.web.maven.content.ContentVO">
+		select board_name as boardname, board_id as boardid from board_master where
+		board_id=${id};
+
+	</select>
+
+
+<!-- 게시판 이름 수정 -->
+	<update id="BoardNamemodifyUpdate" parameterType="com.web.maven.content.boardVO">
+		update board_master set board_name=#{boardname} where board_id=${boardid}
+	</update>
+
+	
+</mapper>
