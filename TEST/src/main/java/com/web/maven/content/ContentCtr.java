@@ -206,10 +206,12 @@ public class ContentCtr {
 		log.info("createBoardDetail 들어옴");
 		int id=Integer.parseInt(req.getParameter("id"));
 
-		ContentVO list = ContentSvc.createBoardDetail(id);
-
+		List<ContentVO> list=ContentSvc.createBoardDetail(id);
+		List<boardVO> link =ContentSvc.boardAuth();
 		modelMap.addAttribute("list", list);
-
+		modelMap.addAttribute("link", link);
+		
+	
 	
 		return "etc/createBoardDetail";
 
@@ -221,9 +223,9 @@ public class ContentCtr {
 		
 		log.info(sv.getBoardname());
 		log.info(sv.getBoardid());
+		log.info(sv.getRankcd());
 		log.info("게시판 명 수정 들어옴");
-
-
+	
 		ContentSvc.BoardNamemodifyUpdate(sv);
 
 		modelMap.addAttribute("list", sv);
@@ -231,7 +233,23 @@ public class ContentCtr {
 
 	}
 	
+	@RequestMapping(value = "/BoardAuthUpdate")
+	public String BoardAuthUpdate(HttpServletRequest req,boardVO sv,  ModelMap modelMap) {
+		
+		log.info(sv.getBoardname());
+		log.info(sv.getBoardid());
+		log.info(sv.getRankcd());
+		log.info("게시판 명 수정 들어옴");
+			
 	
+		
+		
+		ContentSvc.BoardNamemodifyUpdate(sv);
+
+		modelMap.addAttribute("list", sv);
+		return "redirect:/board/list";
+
+	}
 	
 
 }

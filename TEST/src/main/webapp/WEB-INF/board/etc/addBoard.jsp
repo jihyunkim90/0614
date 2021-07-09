@@ -29,12 +29,22 @@
 							<th>게시판 제목</th>
 							<td><input type="text" name="boardname"></td>
 						</tr>
+						<tr>
+							<th>권한</th>
+							<td><input type="checkbox" id="A">A
+								<input type="checkbox" id="U">U
+								<input type="checkbox" id="G">G
+							</td>
+						</tr>
+
 
 					</table>
 
 					<div>
 						<input class="btn btn-primary" type="submit" value="게시판 생성">
 					</div>
+							
+					
 					<div class="col-6">
 					</div>
 			</div>

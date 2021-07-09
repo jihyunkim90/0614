@@ -10,6 +10,7 @@ import lombok.Data;
 public class ContentVO {
 	private int boardid;
 	private String boardname;
+	private String rankcd;
 	private String board;
 	private int id;
 	private String title;

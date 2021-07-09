@@ -124,23 +124,6 @@
 	</update>
 
 
-	<!-- 게시판 이름 중복체크 -->
-	<select id="BoardCheck" parameterType="String"
-		resultType="Integer">
-		select count(board_name) as cnt from board_master where board_name=
-		#{boardname};
-
-	</select>
-
-
-	<!-- 게시판 삭제 생성 -->
-	<update id="deleteBoardList" parameterType="Integer">
-		delete from board_master where board_id = #{boardid};
-	</update>
-
-
-
-
 	<!-- 게시판 이름 가져오기 -->
 	<select id="getboardName"
 		resultType="com.web.maven.content.ContentVO">
@@ -148,33 +131,21 @@
 
 	</select>
 
-	<!-- 게시판 이름 누르면 글쓰기 칸에 보내기 -->
-	<select id="settingBoard" parameterType="String"
-		resultType="com.web.maven.content.ContentVO">
-		select bm.board_id as boardid, bm.board_name boardname, ua.rankcd
 
-		from user_auth ua,
-
-		board_master bm
-
-		where ua.boardID = bm.board_id and board_id = #{boardid}
-
-	</select>
 
 	<!-- 디테일에 보여줄 게시판 이름 가져오기 -->
-	<select id="getboardTwoName" parameterType="Integer"
-		resultType="com.web.maven.content.ContentVO">
-		select board_name as boardname, board_id as boardid from board_master where
-		board_id=${id};
-
-	</select>
-
-
-
-	<!-- 디테일에 보여줄 게시판 이름 가져오기 (2번째 시도) -->
 	<select id="createBoardDeatil" parameterType="Integer" resultType="com.web.maven.content.ContentVO">
-		select board_name as boardname, board_id as boardid from board_master where
-		board_id=${id};
+	
+		
+		select bm.board_name as boardname, ua.rankcd as rankcd
+from (select board_id, board_name
+    from board_master
+   where useFlag ='Y'
+     and board_id = ${id})bm,
+  (select rankcd , boardid
+   from user_auth
+   where useFlag ='Y') ua
+where bm.board_id = ua.boardid;
 
 	</select>
 
@@ -184,5 +155,10 @@
 		update board_master set board_name=#{boardname} where board_id=${boardid}
 	</update>
 
+
+<!-- 게시판 권한 가져오기-->
+	<select id="boardAuth" resultType="com.web.maven.content.boardVO">
+		select distinct rankcd from user_auth  order by rankcd asc;
+	</select>
 	
 </mapper>

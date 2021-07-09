@@ -99,8 +99,8 @@ public class ContentSvc {
 	}
 
 //게시판 디테일에 이름 불러서 칸에 이름 넣기
-	public ContentVO createBoardDetail(int id) {
-		return sqlSession.selectOne("createBoardDeatil", id);
+	public List<ContentVO> createBoardDetail(int id) {
+		return sqlSession.selectList("createBoardDeatil", id);
 	}
 //게시판 이름 수정
 	public void BoardNamemodifyUpdate(boardVO sv) {
@@ -108,6 +108,12 @@ public class ContentSvc {
 		
 	}
 
+	
 
+	//게시판 권한 가져오기
+	public List<boardVO> boardAuth() {
+		return sqlSession.selectList("boardAuth");
 
+		
+	}
 }
